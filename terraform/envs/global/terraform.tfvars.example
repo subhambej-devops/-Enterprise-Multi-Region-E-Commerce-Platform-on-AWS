@@ -1,0 +1,29 @@
+project_name = "enterprise-commerce"
+environment  = "global"
+region       = "us-east-1"
+
+services = ["catalog", "cart", "checkout"]
+
+replication_regions = ["us-west-2"]
+
+github_repositories = [
+  "your-org/enterprise-commerce"
+]
+
+enable_edge = true
+
+domain_name                  = "shop.example.com"
+hosted_zone_id               = "Z00000000000000000000"
+certificate_arn              = "arn:aws:acm:us-east-1:111111111111:certificate/replace-me"
+primary_origin_domain_name   = "primary-ingress.example.com"
+secondary_origin_domain_name = "secondary-ingress.example.com"
+
+monthly_budget_usd = "5000"
+budget_alert_emails = [
+  "cloud-platform@example.com"
+]
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "ecommerce"
+}

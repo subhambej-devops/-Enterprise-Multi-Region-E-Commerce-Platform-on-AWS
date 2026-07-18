@@ -1,0 +1,23 @@
+tempo:
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: enterprise-commerce-tempo
+        endpoint: s3.us-east-1.amazonaws.com
+        region: us-east-1
+  metricsGenerator:
+    enabled: true
+
+distributor:
+  replicas: 2
+
+ingester:
+  replicas: 3
+
+querier:
+  replicas: 2
+
+queryFrontend:
+  replicas: 2
+

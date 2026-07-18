@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-grafana-dashboards
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            platform.openai.com/workload: enterprise-commerce
+  template:
+    metadata:
+      name: 'platform-grafana-dashboards-{{ .name }}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/enterprise-commerce.git
+        targetRevision: main
+        path: kubernetes/observability/dashboards
+      destination:
+        server: '{{ .server }}'
+        namespace: observability
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

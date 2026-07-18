@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: enterprise-commerce
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            platform.openai.com/workload: enterprise-commerce
+  template:
+    metadata:
+      name: 'enterprise-commerce-{{ .name }}'
+      labels:
+        platform.openai.com/workload: enterprise-commerce
+        platform.openai.com/region: '{{ index .metadata.labels "platform.openai.com/region" }}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/your-org/enterprise-commerce.git
+        targetRevision: main
+        path: helm/ecommerce
+        helm:
+          releaseName: enterprise-commerce
+          valuesObject:
+            global:
+              region: '{{ index .metadata.labels "platform.openai.com/region" }}'
+              domain: '{{ index .metadata.annotations "platform.openai.com/domain" }}'
+              imageRegistry: '{{ index .metadata.annotations "platform.openai.com/ecr-registry" }}/enterprise-commerce'
+              imageTag: '{{ index .metadata.annotations "platform.openai.com/image-tag" }}'
+      destination:
+        server: '{{ .server }}'
+        namespace: ecommerce
+      syncPolicy:
+        managedNamespaceMetadata:
+          labels:
+            istio-injection: enabled
+            pod-security.kubernetes.io/enforce: baseline
+            pod-security.kubernetes.io/audit: restricted
+            pod-security.kubernetes.io/warn: restricted
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true

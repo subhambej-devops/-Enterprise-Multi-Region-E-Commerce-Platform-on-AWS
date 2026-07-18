@@ -1,0 +1,16 @@
+project_name = "enterprise-commerce"
+environment  = "primary"
+region       = "us-east-1"
+
+cluster_version                = "1.35"
+cluster_endpoint_public_access = false
+cluster_endpoint_public_access_cidrs = []
+
+admin_role_arns = [
+  "arn:aws:iam::111111111111:role/platform-admin"
+]
+
+tags = {
+  Owner      = "platform"
+  CostCenter = "ecommerce"
+}

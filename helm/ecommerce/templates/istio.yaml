@@ -1,0 +1,51 @@
+{{- if .Values.istio.enabled }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.istio.gatewayName }}
+  labels:
+    {{- include "ecommerce.commonLabels" . | nindent 4 }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: {{ .Values.istio.tls.credentialName }}
+      hosts:
+        - {{ required "global.domain is required" .Values.global.domain | quote }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: ecommerce-mtls
+  labels:
+    {{- include "ecommerce.commonLabels" . | nindent 4 }}
+spec:
+  mtls:
+    mode: {{ .Values.istio.mtlsMode }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ecommerce-ingress-and-observability
+  labels:
+    {{- include "ecommerce.commonLabels" . | nindent 4 }}
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces:
+              - istio-system
+              - observability
+      to:
+        - operation:
+            ports:
+              - "8080"
+{{- end }}

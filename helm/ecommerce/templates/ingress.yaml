@@ -1,0 +1,27 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ecommerce.fullname" . }}
+  labels:
+    {{- include "ecommerce.commonLabels" . | nindent 4 }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  rules:
+    - host: {{ required "global.domain is required" .Values.global.domain | quote }}
+      http:
+        paths:
+          {{- range $name, $svc := .Values.services }}
+          {{- if $svc.enabled }}
+          - path: {{ $svc.pathPrefix | quote }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "ecommerce.serviceName" (dict "root" $ "name" $name) }}
+                port:
+                  name: http
+          {{- end }}
+          {{- end }}
+{{- end }}

@@ -1,0 +1,124 @@
+global:
+  imageRegistry: ""
+  imageTag: "dev"
+  environment: "production"
+  region: "us-east-1"
+  domain: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+rollouts:
+  enabled: true
+  strategy: canary
+  canary:
+    maxSurge: "25%"
+    maxUnavailable: 0
+    steps:
+      - setWeight: 10
+      - pause:
+          duration: 2m
+      - setWeight: 25
+      - pause:
+          duration: 5m
+      - setWeight: 50
+      - pause:
+          duration: 10m
+  blueGreen:
+    autoPromotionEnabled: false
+    scaleDownDelaySeconds: 60
+
+ingress:
+  enabled: false
+  className: "alb"
+  annotations:
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/healthcheck-path: "/healthz"
+
+istio:
+  enabled: true
+  gatewayName: "ecommerce-gateway"
+  mtlsMode: "PERMISSIVE"
+  tls:
+    credentialName: "ecommerce-tls"
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+
+otel:
+  enabled: true
+  endpoint: "http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4317"
+
+networkPolicy:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+services:
+  catalog:
+    enabled: true
+    replicas: 3
+    pathPrefix: "/catalog"
+    image:
+      repository: ""
+      tag: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 65
+      targetMemoryUtilizationPercentage: 75
+  cart:
+    enabled: true
+    replicas: 3
+    pathPrefix: "/cart"
+    image:
+      repository: ""
+      tag: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 30
+      targetCPUUtilizationPercentage: 65
+      targetMemoryUtilizationPercentage: 75
+  checkout:
+    enabled: true
+    replicas: 4
+    pathPrefix: "/checkout"
+    image:
+      repository: ""
+      tag: ""
+    resources:
+      requests:
+        cpu: 150m
+        memory: 192Mi
+      limits:
+        cpu: 750m
+        memory: 768Mi
+    autoscaling:
+      enabled: true
+      minReplicas: 4
+      maxReplicas: 40
+      targetCPUUtilizationPercentage: 60
+      targetMemoryUtilizationPercentage: 75

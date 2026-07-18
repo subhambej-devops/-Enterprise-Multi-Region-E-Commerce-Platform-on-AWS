@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-otel-collector
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            platform.openai.com/workload: enterprise-commerce
+  template:
+    metadata:
+      name: 'platform-otel-collector-{{ .name }}'
+    spec:
+      project: default
+      sources:
+        - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+          chart: opentelemetry-collector
+          targetRevision: 0.161.0
+          helm:
+            releaseName: otel-collector
+            valueFiles:
+              - $values/kubernetes/observability/otel-collector-values.yaml
+        - repoURL: https://github.com/your-org/enterprise-commerce.git
+          targetRevision: main
+          ref: values
+      destination:
+        server: '{{ .server }}'
+        namespace: observability
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

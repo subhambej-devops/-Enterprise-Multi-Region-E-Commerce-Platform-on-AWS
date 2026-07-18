@@ -1,0 +1,13 @@
+.git
+.github
+terraform
+argocd
+kubernetes
+docs
+helm
+tests
+*.md
+bin
+coverage.out
+__pycache__
+*.pyc
